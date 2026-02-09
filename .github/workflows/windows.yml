@@ -31,12 +31,14 @@ jobs:
       - name: Checkout Tk
         uses: actions/checkout@v6
         with:
+          repository: tcltk/tk
+          ref: ${{ matrix.tcl-label }}
           path: tk
       - name: Checkout Tcl
         uses: actions/checkout@v6
         with:
           repository: tcltk/tcl
-          ref: main
+          ref: ${{ matrix.tcl-label }}
           path: tcl
       - name: Init MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -114,7 +116,7 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
-        working-directory: win
+        working-directory: tk/win
     strategy:
       matrix:
         config:
@@ -148,7 +150,7 @@ jobs:
           mkdir "${HOME}/install_dir"
           echo INSTALL_DIR=${HOME}/install_dir >> $GITHUB_ENV
           echo "WIN_INSTALL_DIR=`cygpath -w ${HOME}/install_dir`" >> $GITHUB_ENV
-        working-directory: generic
+        working-directory: tk/generic
       - name: Configure and Build Tcl (${{ matrix.config }})
         run: |
           ./configure $CFGOPT "--prefix=$INSTALL_DIR" || {
