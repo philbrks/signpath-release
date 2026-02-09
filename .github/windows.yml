@@ -1,0 +1,217 @@
+name: Windows
+on:
+  workflow_dispatch:
+    inputs:
+      tcl-labels:
+        required: true
+        type: choice
+        options:
+          - '["core-9-1-a1-rc"]'
+        default: '["core-9-1-a1-rc"]'
+permissions:
+  contents: read
+env:
+  ERROR_ON_FAILURES: 1
+jobs:
+  msvc:
+    if: 1 == 0
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: powershell
+        working-directory: tk/win
+    # Using powershell means we need to explicitly stop on failure
+    strategy:
+      matrix:
+        config:
+          - ""
+          # - "OPTS=symbols"
+          # - "OPTS=static"
+    steps:
+      - name: Checkout Tk
+        uses: actions/checkout@v6
+        with:
+          path: tk
+      - name: Checkout Tcl
+        uses: actions/checkout@v6
+        with:
+          repository: tcltk/tcl
+          ref: main
+          path: tcl
+      - name: Init MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build Tcl (${{ matrix.config }})
+        run: |
+          &nmake -f makefile.vc release ${{ matrix.config }}
+        working-directory: tcl/win
+      - name: Install Tcl  (${{ matrix.config }})
+        run: |
+          &nmake -f makefile.vc install ${{ matrix.config }}
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+          # Get-ChildItem -Path "C:\Tcl" -Recurse -File
+          # Copy-Item -Path "C:\Tcl" -Destination zipdist -Recurse -Force
+        working-directory: tcl/win
+      - name: Build Tk (${{ matrix.config }})
+        run: |
+          &nmake -f makefile.vc all ${{ matrix.config }}
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+      - name: Build Test Harness (${{ matrix.config }})
+        if: 0 == 1
+        run: |
+          &nmake -f makefile.vc tktest ${{ matrix.config }}
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+      - name: Run Tk Tests (${{ matrix.config }})
+        if: 0 == 1
+        run: |
+          nmake -f makefile.vc test-classic ${{ matrix.config }} | tee out-classic.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+          nmake -f makefile.vc test-ttk ${{ matrix.config }} | tee out-ttk.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+          grep -q "Failed	0" out-classic.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+          grep -q "Failed	0" out-ttk.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+        env:
+          CI_BUILD_WITH_MSVC: 1
+        shell: bash
+        timeout-minutes: 10
+      - name: Build Help (${{ matrix.config }})
+        run: |
+          &nmake -f makefile.vc htmlhelp ${{ matrix.config }}
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+      - name: Install Tk (${{ matrix.config }})
+        run: |
+          &nmake -f makefile.vc install ${{ matrix.config }}
+          if ($lastexitcode -ne 0) {
+             throw "nmake exit code: $lastexitcode"
+          }
+      - name: Upload distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Tcl-Tk Release Distribution (Win64)"
+          path: "C:/Tcl"
+  gcc:
+    if: 1 == 1
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+        working-directory: win
+    strategy:
+      matrix:
+        config:
+          - ""
+          #- "--enable-symbols=mem"
+          #- "--enable-symbols=all"
+          #- "--disable-shared"
+        tcl-label: ${{ fromJSON(github.event.inputs.tcl-labels) }}
+    steps:
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: git mingw-w64-x86_64-toolchain make zip
+      - name: Checkout Tk
+        uses: actions/checkout@v6
+        with:
+          repository: tcltk/tk
+          ref: ${{ matrix.tcl-label }}
+          path: tk
+      - name: Checkout Tcl
+        uses: actions/checkout@v6
+        with:
+          repository: tcltk/tcl
+          ref: ${{ matrix.tcl-label }}
+          path: tcl
+      - name: Prepare
+        run: |
+          touch tkStubInit.c
+          touch "${HOME}/forWinDialog-5.12.7"
+          mkdir "${HOME}/install_dir"
+          echo INSTALL_DIR=${HOME}/install_dir >> $GITHUB_ENV
+          echo "WIN_INSTALL_DIR=`cygpath -w ${HOME}/install_dir`" >> $GITHUB_ENV
+        working-directory: generic
+      - name: Configure and Build Tcl (${{ matrix.config }})
+        run: |
+          ./configure $CFGOPT "--prefix=$INSTALL_DIR" || {
+            cat config.log
+            echo "::warning::Failure during Tcl Configure"
+            exit 1
+          }
+          make all install  || {
+            echo "::warning::Failure during Tcl Build"
+            exit 1
+          }
+          echo "TCL_CONFIG_PATH=`pwd`" >> $GITHUB_ENV
+        env:
+          CFGOPT: --enable-64bit ${{ matrix.config }}
+        working-directory: tcl/win
+      - name: Configure Tk (${{ matrix.config }})
+        run: |
+          ./configure $CFGOPT "--prefix=$INSTALL_DIR" "--with-tcl=$TCL_CONFIG_PATH" || {
+            cat config.log
+            echo "::error::Failure during Configure"
+            exit 1
+          }
+        env:
+          CFGOPT: --enable-64bit ${{ matrix.config }}
+        working-directory: tk
+      - name: Build Tk
+        run: |
+          make all || {
+            echo "::error::Failure during Build"
+            exit 1
+          }
+        working-directory: tk
+      - name: Test Tk
+        if: 1 == 0
+        run: |
+          make tktest || {
+            echo "::error::Failure during Tk Test"
+            exit 1
+          }
+        working-directory: tk
+      - name: Install Tk
+        run: |
+          make install || {
+            echo "::error::Failure during Install"
+            exit 1
+          }
+        working-directory: tk
+      - name: Upload distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Tcl-Tk Release Distribution (Win64)"
+          path: "${{ env.WIN_INSTALL_DIR }}"
+      - name: Run Tk Tests
+        run: |
+          make test-classic | tee out-classic.txt
+          make test-ttk | tee out-ttk.txt
+          grep -q "Failed	0" out-classic.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+          grep -q "Failed	0" out-ttk.txt || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+        timeout-minutes: 10
+        working-directory: tk
