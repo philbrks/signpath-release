@@ -175,7 +175,7 @@ jobs:
           }
         env:
           CFGOPT: --enable-64bit ${{ matrix.config }}
-        working-directory: tk
+        working-directory: tk/generic
       - name: Build Tk
         run: |
           make all || {
