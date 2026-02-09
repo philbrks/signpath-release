@@ -116,7 +116,7 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
-        working-directory: tk/generic
+        working-directory: tk/win
     strategy:
       matrix:
         config:
@@ -175,14 +175,12 @@ jobs:
           }
         env:
           CFGOPT: --enable-64bit ${{ matrix.config }}
-        working-directory: tk/generic
       - name: Build Tk
         run: |
           make all || {
             echo "::error::Failure during Build"
             exit 1
           }
-        working-directory: tk/generic
       - name: Test Tk
         if: 1 == 0
         run: |
@@ -190,14 +188,12 @@ jobs:
             echo "::error::Failure during Tk Test"
             exit 1
           }
-        working-directory: tk/generic
       - name: Install Tk
         run: |
           make install || {
             echo "::error::Failure during Install"
             exit 1
           }
-        working-directory: tk/generic
       - name: Upload distribution
         uses: actions/upload-artifact@v4
         with:
@@ -216,4 +212,3 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
-        working-directory: tk/generic
