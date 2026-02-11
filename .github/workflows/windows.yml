@@ -45,7 +45,7 @@ jobs:
         run: |
           mkdir "C:\Tcl-tk"
           echo "INSTALL_DIR=C:\Tcl-tk" >> $GITHUB_ENV
-          echo "TCLSH=$INSTALL_DIR/bin/tclsh90.exe" >> $GITHUB_ENV
+          echo "TCLSH=C:\Tcl-tk\bin\tclsh90.exe" >> $GITHUB_ENV
         working-directory: .
       - name: Checkout Tk
         uses: actions/checkout@v6
@@ -78,6 +78,7 @@ jobs:
       - name: Build Tcl (${{ matrix.config }})
         run: |
           &nmake -f makefile.vc release ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          echo "INSTALL_DIR=$Env:INSTALL_DIR"
         working-directory: tcl/win
       - name: Install Tcl  (${{ matrix.config }})
         run: |
@@ -85,6 +86,7 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
+          echo "INSTALL_DIR=$Env:INSTALL_DIR"
           # Get-ChildItem -Path "C:\Tcl" -Recurse -File
           # Copy-Item -Path "C:\Tcl" -Destination zipdist -Recurse -Force
         working-directory: tcl/win
@@ -133,7 +135,7 @@ jobs:
       - name: Install Tk (${{ matrix.config }})
         run: |
           &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
-          echo "INSTALL_DIR=$Env::INSTALL_DIR"
+          echo "INSTALL_DIR=$Env:INSTALL_DIR"
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -247,6 +249,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
