@@ -43,8 +43,8 @@ jobs:
     steps:
       - name: Prepare
         run: |
-          mkdir "C:\Tcl"
-          echo "INSTALL_DIR=C:\Tcl" >> $GITHUB_ENV
+          mkdir "C:\Tcl-tk"
+          echo "INSTALL_DIR=C:\Tcl-tk" >> $GITHUB_ENV
           echo "TCLSH=$INSTALL_DIR/bin/tclsh90.exe" >> $GITHUB_ENV
         working-directory: .
       - name: Checkout Tk
@@ -133,6 +133,7 @@ jobs:
       - name: Install Tk (${{ matrix.config }})
         run: |
           &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          echo "INSTALL_DIR=$Env::INSTALL_DIR"
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -246,6 +247,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
