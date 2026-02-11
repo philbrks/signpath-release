@@ -45,14 +45,7 @@ jobs:
         run: |
           mkdir "C:\Tcl"
           echo "INSTALL_DIR=C:\Tcl" >> $GITHUB_ENV
-          if ( ${{ $matrix.tcl-tag }} -match "core-9-0.*" ) {
-            echo "TCLSH=$INSTALL_DIR/bin/tclsh90.exe" >> $GITHUB_ENV
-          } else if ( ${{ $matrix.tcl-tag }} -match "core-9-1.*" ) {
-            echo "TCLSH=$INSTALL_DIR/bin/tclsh91.exe" >> $GITHUB_ENV
-          } else {
-            echo "Unable to set TCLSH."
-            exit 1
-          }
+          echo "TCLSH=$INSTALL_DIR/bin/tclsh90.exe" >> $GITHUB_ENV
         working-directory: tk/generic
       - name: Checkout Tk
         uses: actions/checkout@v6
@@ -253,4 +246,5 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
