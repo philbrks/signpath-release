@@ -44,7 +44,7 @@ jobs:
       - name: Prepare
         run: |
           mkdir "C:\Tcl-tk"
-          Add-Content -Path $env:GITHUB_ENV -Value "INSTALL_DIR=C:\Tcl-tk"
+          Add-Content -Path $env:GITHUB_ENV -Value "INSTALLDIR=C:\Tcl-tk"
           Add-Content -Path $env:GITHUB_ENV -Value "TCLSH=C:\Tcl-tk\bin\tclsh90.exe"
         working-directory: .
       - name: Checkout Tk
@@ -77,29 +77,29 @@ jobs:
           arch: x64
       - name: Build Tcl (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc release ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
-          echo "INSTALL_DIR=$Env:INSTALL_DIR"
+          &nmake -f makefile.vc release ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
+          echo "INSTALLDIR=$Env:INSTALLDIR"
         working-directory: tcl/win
       - name: Install Tcl  (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          &nmake -f makefile.vc install ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
-          echo "INSTALL_DIR=$Env:INSTALL_DIR"
+          echo "INSTALLDIR=$Env:INSTALLDIR"
           # Get-ChildItem -Path "C:\Tcl" -Recurse -File
           # Copy-Item -Path "C:\Tcl" -Destination zipdist -Recurse -Force
         working-directory: tcl/win
       - name: Build Tk (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc all ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          &nmake -f makefile.vc all ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
       - name: Build Test Harness (${{ matrix.config }})
         if: 0 == 1
         run: |
-          &nmake -f makefile.vc tktest ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          &nmake -f makefile.vc tktest ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -128,14 +128,14 @@ jobs:
         timeout-minutes: 10
       - name: Build Help (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc htmlhelp ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
+          &nmake -f makefile.vc htmlhelp ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
       - name: Install Tk (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=$Env:INSTALL_DIR
-          echo "INSTALL_DIR=$Env:INSTALL_DIR"
+          &nmake -f makefile.vc install ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
+          echo "INSTALLDIR=$Env:INSTALLDIR"
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -143,10 +143,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
-          path: ${{ env.INSTALL_DIR }}
+          path: ${{ env.INSTALLDIR }}
       #- name: Install TclLib
       #  run: |
-      #    &${{ env.INSTALL_DIR }}\bin\tclsh
+      #    &${{ env.INSTALLDIR }}\bin\tclsh
   gcc:
     if: 1 == 0
     runs-on: windows-2025
@@ -185,12 +185,12 @@ jobs:
           touch tkStubInit.c
           touch "${HOME}/forWinDialog-5.12.7"
           mkdir "${HOME}/install_dir"
-          echo INSTALL_DIR=${HOME}/install_dir >> $GITHUB_ENV
-          echo "WIN_INSTALL_DIR=`cygpath -w ${HOME}/install_dir`" >> $GITHUB_ENV
+          echo INSTALLDIR=${HOME}/install_dir >> $GITHUB_ENV
+          echo "WIN_INSTALLDIR=`cygpath -w ${HOME}/install_dir`" >> $GITHUB_ENV
         working-directory: tk/generic
       - name: Configure and Build Tcl (${{ matrix.config }})
         run: |
-          ./configure $CFGOPT "--prefix=$INSTALL_DIR" || {
+          ./configure $CFGOPT "--prefix=$INSTALLDIR" || {
             cat config.log
             echo "::warning::Failure during Tcl Configure"
             exit 1
@@ -205,7 +205,7 @@ jobs:
         working-directory: tcl/win
       - name: Configure Tk (${{ matrix.config }})
         run: |
-          ./configure $CFGOPT "--prefix=$INSTALL_DIR" "--with-tcl=$TCL_CONFIG_PATH" || {
+          ./configure $CFGOPT "--prefix=$INSTALLDIR" "--with-tcl=$TCL_CONFIG_PATH" || {
             cat config.log
             echo "::error::Failure during Configure"
             exit 1
@@ -235,7 +235,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
-          path: "${{ env.WIN_INSTALL_DIR }}"
+          path: "${{ env.WIN_INSTALLDIR }}"
       - name: Run Tk Tests
         run: |
           make test-classic | tee out-classic.txt
@@ -249,6 +249,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
