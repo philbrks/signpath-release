@@ -140,7 +140,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
-          path: $INSTALL_DIR
+          path: ${{ env.INSTALL_DIR }}
       #- name: Install TclLib
       #  run: |
       #    &${{ env.INSTALL_DIR }}\bin\tclsh
@@ -246,6 +246,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
