@@ -44,8 +44,8 @@ jobs:
       - name: Prepare
         run: |
           mkdir "C:\Tcl-tk"
-          echo "INSTALL_DIR=C:\Tcl-tk" >> $GITHUB_ENV
-          echo "TCLSH=C:\Tcl-tk\bin\tclsh90.exe" >> $GITHUB_ENV
+          Add-Content -Path $env:GITHUB_ENV -Value "INSTALL_DIR=C\Tcl-tk"
+          Add-Content -Path $env:GITHUB_ENV -Value "TCLSH=C:\Tcl-tk\bin\tclsh90.exe"
         working-directory: .
       - name: Checkout Tk
         uses: actions/checkout@v6
@@ -249,6 +249,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
