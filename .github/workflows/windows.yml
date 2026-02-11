@@ -77,11 +77,11 @@ jobs:
           arch: x64
       - name: Build Tcl (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc release ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc release ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
         working-directory: tcl/win
       - name: Install Tcl  (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -90,14 +90,14 @@ jobs:
         working-directory: tcl/win
       - name: Build Tk (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc all ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc all ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
       - name: Build Test Harness (${{ matrix.config }})
         if: 0 == 1
         run: |
-          &nmake -f makefile.vc tktest ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc tktest ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -126,13 +126,13 @@ jobs:
         timeout-minutes: 10
       - name: Build Help (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc htmlhelp ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc htmlhelp ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
       - name: Install Tk (${{ matrix.config }})
         run: |
-          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=${{ env.install_dir }}
+          &nmake -f makefile.vc install ${{ matrix.config }} INSTALL_DIR=${{ env.INSTALL_DIR }}
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
@@ -140,10 +140,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
-          path: ${{ env.install_dir }}
+          path: ${{ env.INSTALL_DIR }}
       - name: Install TclLib
         run: |
-          &${{ env.install_dir }}\bin\tclsh
+          &${{ env.INSTALL_DIR }}\bin\tclsh
   gcc:
     if: 1 == 0
     runs-on: windows-2025
@@ -246,6 +246,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
