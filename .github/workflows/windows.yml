@@ -141,15 +141,19 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
+      - name: Install TclLib
+        run: |
+          &${{ env.TCLSH }} installer.tcl -no-gui -html -html-path ${{ env.INSTALLDIR }}/lib -examples -example-path ${{ env.INSTALLDIR }}/lib -pkgs -pkg-path ${{ env.INSTALLDIR }}/lib -apps -app-path ${{ env.INSTALLDIR }}/lib -no-nroff -no-wait
+        working-directory: tcllib
+      - name: Install TkLib
+        run: |
+          &${{ env.TCLSH }} .\installer.tcl -no-wait -no-gui -html -no-nroff -examples -pkgs -pkg-path ${{ env.INSTALLDIR }}/lib -apps -app-path ${{ env.INSTALLDIR }}/lib -html-path ${{ env.INSTALLDIR }}/lib -example-path ${{ env.INSTALLDIR }}/lib
+        working-directory: tklib
       - name: Upload distribution
         uses: actions/upload-artifact@v4
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
           path: ${{ env.INSTALLDIR }}
-      - name: Install TclLib
-        run: |
-          &${{ env.TCLSH }} installer.tcl -no-gui -html -html-path ${{ env.INSTALLDIR }}/lib -examples -example-path ${{ env.INSTALLDIR }}/lib -pkgs -pkg-path ${{ env.INSTALLDIR }}/lib -apps -app-path ${{ env.INSTALLDIR }}/lib -no-nroff -no-wait
-        working-directory: tcllib
   gcc:
     if: 1 == 0
     runs-on: windows-2025
@@ -252,6 +256,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
