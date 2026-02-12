@@ -45,9 +45,9 @@ jobs:
         run: |
           mkdir "C:\Tcl-tk"
           Add-Content -Path $env:GITHUB_ENV -Value "INSTALLDIR=C:\Tcl-tk"
-          if ( ${{ matrix.tcl-tag }} -match 'core-9-0-.*' ) {
+          if ( '${{ matrix.tcl-tag }}' -match 'core-9-0-.*' ) {
             Add-Content -Path $env:GITHUB_ENV -Value "TCLSH=C:\Tcl-tk\bin\tclsh90.exe"
-          } elseif ( ${{ matrix.tcl-tag }} -match 'core-9-1-.*' ) {
+          } elseif ( '${{ matrix.tcl-tag }}' -match 'core-9-1-.*' ) {
             Add-Content -Path $env:GITHUB_ENV -Value "TCLSH=C:\Tcl-tk\bin\tclsh91.exe"
           } else {
             throw "Unable to set value for TCLSH variable"
@@ -252,6 +252,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
