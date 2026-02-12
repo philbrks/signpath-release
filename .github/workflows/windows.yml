@@ -84,7 +84,6 @@ jobs:
       - name: Build Tcl (${{ matrix.config }})
         run: |
           &nmake -f makefile.vc release ${{ matrix.config }} INSTALLDIR=$Env:INSTALLDIR
-          echo "INSTALLDIR=$Env:INSTALLDIR"
         working-directory: tcl/win
       - name: Install Tcl  (${{ matrix.config }})
         run: |
@@ -92,9 +91,6 @@ jobs:
           if ($lastexitcode -ne 0) {
              throw "nmake exit code: $lastexitcode"
           }
-          echo "INSTALLDIR=$Env:INSTALLDIR"
-          # Get-ChildItem -Path "C:\Tcl" -Recurse -File
-          # Copy-Item -Path "C:\Tcl" -Destination zipdist -Recurse -Force
         working-directory: tcl/win
       - name: Build Tk (${{ matrix.config }})
         run: |
@@ -110,7 +106,7 @@ jobs:
              throw "nmake exit code: $lastexitcode"
           }
       - name: Run Tk Tests (${{ matrix.config }})
-        if: 0 == 1
+        if: 1 == 1
         run: |
           nmake -f makefile.vc test-classic ${{ matrix.config }} | tee out-classic.txt || {
             echo "::error::Failure during Test"
@@ -150,9 +146,10 @@ jobs:
         with:
           name: "Tcl-Tk Release Distribution (Win64)"
           path: ${{ env.INSTALLDIR }}
-      #- name: Install TclLib
-      #  run: |
-      #    &${{ env.INSTALLDIR }}\bin\tclsh
+      - name: Install TclLib
+        run: |
+          &${{ env.TCLSH }} installer.tcl -no-gui -html -html-path ${{ env.INSTALLDIR }}/lib -examples -example-path ${{ env.INSTALLDIR }}/lib -pkgs -pkg-path ${{ env.INSTALLDIR }}/lib -apps -app-path ${{ env.INSTALLDIR }}/lib -no-nroff -no-wait
+        working-directory: tcllib
   gcc:
     if: 1 == 0
     runs-on: windows-2025
@@ -255,6 +252,7 @@ jobs:
             exit 1
           }
         timeout-minutes: 10
+
 
 
 
